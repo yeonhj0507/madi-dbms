@@ -1,16 +1,21 @@
-import { NextResponse } from "next/server";
 import { notion } from "@/lib/notion";
 import { DB_IDS } from "@/lib/notion-ids";
+import { CreateClinicSchema, validateRequest } from "@/lib/schemas";
+import { success, error, validationError } from "@/lib/api-response";
+import { logRequest, logError } from "@/lib/logger";
 
 export async function POST(req: Request) {
-  const { students, programId, date, contentDefault, contentsPerStudent } =
-    await req.json();
-  // students: { id: string; name: string }[]
-  // contentsPerStudent: Record<studentId, string> — optional, for individual content
-
-  if (!students?.length || !programId || !date) {
-    return NextResponse.json({ error: "필수 필드 누락" }, { status: 400 });
-  }
+  try {
+    logRequest('POST', '/api/clinic/batch-create');
+    
+    const body = await req.json();
+    const validation = validateRequest(CreateClinicSchema, body);
+    
+    if (!validation.success) {
+      return validationError(validation.error);
+    }
+    
+    const { students, programId, date, contentDefault, contentsPerStudent } = validation.data;
 
   // YYMMDD 형식 날짜
   const [y, m, d] = date.split("-");
@@ -37,8 +42,12 @@ export async function POST(req: Request) {
     })
   );
 
-  const succeeded = results.filter((r) => r.status === "fulfilled").length;
-  const failed = results.filter((r) => r.status === "rejected").length;
+    const succeeded = results.filter((r) => r.status === "fulfilled").length;
+    const failed = results.filter((r) => r.status === "rejected").length;
 
-  return NextResponse.json({ succeeded, failed });
+    return success({ succeeded, failed }, `클리닉 ${succeeded}개 생성, ${failed}개 실패`);
+  } catch (err) {
+    logError(err, { path: '/api/clinic/batch-create' });
+    return error('클리닉 생성 중 오류가 발생했습니다');
+  }
 }

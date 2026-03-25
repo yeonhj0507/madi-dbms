@@ -1,19 +1,20 @@
 import { Client } from "@notionhq/client";
+import { env } from "./env";
+import logger from "./logger";
 
-// Runtime check - only throw error when Notion API is actually called
+/**
+ * Notion API client with lazy initialization
+ */
+
 let notionClient: Client | null = null;
 
 function getNotionClient(): Client {
-  if (!process.env.NOTION_TOKEN) {
-    throw new Error(
-      "NOTION_TOKEN environment variable is not set. Please add it to your .env.local file."
-    );
-  }
-  
   if (!notionClient) {
     notionClient = new Client({
-      auth: process.env.NOTION_TOKEN,
+      auth: env.NOTION_TOKEN,
     });
+    
+    logger.info('Notion client initialized');
   }
   
   return notionClient;
