@@ -9,8 +9,14 @@ export default function NavBar() {
   const isStaff = path.startsWith("/staff");
 
   return (
-    <nav className="bg-white border-b border-slate-200 px-4 py-3 flex items-center gap-6">
-      <span className="font-bold text-lg text-indigo-700 tracking-tight">MADI</span>
+    <nav 
+      className="bg-white border-b border-slate-200 px-4 py-3 flex items-center gap-6" 
+      role="navigation" 
+      aria-label="메인 네비게이션"
+    >
+      <Link href="/" className="font-bold text-lg text-indigo-700 tracking-tight hover:text-indigo-800 transition" aria-label="MADI 홈">
+        MADI
+      </Link>
       {isTeacher && (
         <div className="flex gap-4 text-sm">
           <Link

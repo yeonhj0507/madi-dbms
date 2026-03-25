@@ -4,6 +4,14 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "MADI 운영 도구",
   description: "수다방 MADI 내부 관리 도구",
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
+  },
+  icons: {
+    icon: "/favicon.ico",
+  },
 };
 
 export default function RootLayout({
@@ -12,8 +20,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ko">
-      <body className="bg-slate-50 min-h-screen antialiased">{children}</body>
+    <html lang="ko" suppressHydrationWarning>
+      <head>
+        <meta charSet="utf-8" />
+        <meta name="color-scheme" content="light" />
+      </head>
+      <body className="bg-slate-50 min-h-screen antialiased">
+        {children}
+      </body>
     </html>
   );
 }
