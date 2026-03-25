@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { QueryProvider } from "./providers";
 
 export const metadata: Metadata = {
   title: "MADI 운영 도구",
@@ -26,7 +27,9 @@ export default function RootLayout({
         <meta charSet="utf-8" />
       </head>
       <body className="bg-slate-50 dark:bg-slate-900 min-h-screen antialiased transition-colors">
-        <ThemeProvider>{children}</ThemeProvider>
+        <QueryProvider>
+          <ThemeProvider>{children}</ThemeProvider>
+        </QueryProvider>
       </body>
     </html>
   );
