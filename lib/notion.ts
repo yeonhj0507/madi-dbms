@@ -24,7 +24,7 @@ function getNotionClient(): Client {
 export const notion = new Proxy(
   {},
   {
-    get: (target, prop) => {
+    get: (_target, prop) => {
       const client = getNotionClient();
       return (client as any)[prop];
     },

@@ -10,8 +10,6 @@ export async function POST(req: Request) {
     
     const body = await req.json();
     
-    // Add category to schema temporarily
-    const extendedBody = { ...body, testId: body.testId || '', date: body.date || '' };
     const validation = validateRequest(CreateTestSchema, {
       students: body.students,
       programId: body.programId || '',
