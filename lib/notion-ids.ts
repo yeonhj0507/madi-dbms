@@ -1,0 +1,7 @@
+export const DB_IDS = {
+  STUDENTS: "20e67a4c-89e9-806b-bbd8-eb79fd8a2679",
+  PROGRAMS: "20e67a4c-89e9-8069-853f-fbd26b265cd4",
+  TEST_RECORDS: "21767a4c-89e9-8011-8fad-c28f336a31a8",
+  TEST_MANAGEMENT: "21767a4c-89e9-8050-8f8e-ff5a0e31657f",
+  CLINICS: "21767a4c-89e9-803d-8289-fd4c534b0f49",
+} as const;

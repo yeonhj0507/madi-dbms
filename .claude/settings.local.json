@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl:*)",
+      "Bash(npx create-next-app@latest . --typescript --tailwind --eslint --app --no-src-dir --import-alias \"@/*\" --yes)",
+      "Bash(npx create-next-app@latest . --typescript --tailwind --eslint --app --no-src-dir --import-alias \"@/*\" --yes --force)",
+      "Read(//f/Project/수다방/**)",
+      "Bash(npx create-next-app@latest madi_dbms_tmp --typescript --tailwind --eslint --app --no-src-dir --import-alias \"@/*\" --yes)",
+      "Bash(cp -r \"F:/Project/수다방/madi_dbms_tmp/.\" \"F:/Project/수다방/madi_dbms/\")",
+      "Bash(rm -rf \"F:/Project/수다방/madi_dbms_tmp\")",
+      "Bash(cd:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run:*)",
+      "Bash(npx next:*)",
+      "Bash(echo \"BUILD_EXIT:$?\")",
+      "Bash(echo \"EXIT:$?\")"
+    ]
+  }
+}
