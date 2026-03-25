@@ -41,13 +41,16 @@ export const BatchScoreSchema = z.object({
 export const PaginationSchema = z.object({
   page: z.coerce.number().int().positive().default(1),
   limit: z.coerce.number().int().positive().max(100).default(20),
+  cursor: z.string().optional(),
 });
 
-// Search schema
+// Search schema  
 export const SearchSchema = z.object({
   query: z.string().optional(),
   programId: z.string().optional(),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  sort: z.enum(['date', 'name', 'score']).optional(),
+  order: z.enum(['asc', 'desc']).optional().default('desc'),
 });
 
 /**
