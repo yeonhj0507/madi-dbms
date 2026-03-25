@@ -45,13 +45,13 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 to-white dark:from-slate-900 dark:to-slate-800 p-4">
-      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-8 max-w-md w-full">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 to-white p-4">
+      <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-indigo-700 dark:text-indigo-400 mb-2">
+          <h1 className="text-3xl font-bold text-indigo-700 mb-2">
             MADI 로그인
           </h1>
-          <p className="text-slate-600 dark:text-slate-400">
+          <p className="text-slate-600">
             운영 도구 접속
           </p>
         </div>
@@ -81,8 +81,8 @@ export default function LoginPage() {
           </Button>
         </form>
 
-        <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700">
-          <p className="text-sm text-slate-600 dark:text-slate-400 mb-3 text-center">
+        <div className="mt-6 pt-6 border-t border-slate-200">
+          <p className="text-sm text-slate-600 mb-3 text-center">
             빠른 로그인 (개발용)
           </p>
           <div className="grid grid-cols-2 gap-3">
@@ -105,7 +105,7 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <p className="mt-6 text-xs text-center text-slate-500 dark:text-slate-400">
+        <p className="mt-6 text-xs text-center text-slate-500">
           기본 비밀번호: madi123
         </p>
       </div>

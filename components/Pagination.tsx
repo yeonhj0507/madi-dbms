@@ -24,7 +24,7 @@ export function Pagination({
       <button
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
-        className="px-4 py-2 bg-slate-200 dark:bg-slate-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-300 dark:hover:bg-slate-600 transition"
+        className="px-4 py-2 bg-slate-200 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-300 transition"
       >
         ← 이전
       </button>
@@ -34,7 +34,7 @@ export function Pagination({
           <>
             <button
               onClick={() => onPageChange(1)}
-              className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition"
+              className="w-10 h-10 rounded-lg bg-slate-100 hover:bg-slate-200 transition"
             >
               1
             </button>
@@ -49,7 +49,7 @@ export function Pagination({
             className={`w-10 h-10 rounded-lg transition ${
               page === currentPage
                 ? "bg-indigo-600 text-white"
-                : "bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600"
+                : "bg-slate-100 hover:bg-slate-200"
             }`}
           >
             {page}
@@ -61,7 +61,7 @@ export function Pagination({
             {currentPage < totalPages - 3 && <span className="px-2">...</span>}
             <button
               onClick={() => onPageChange(totalPages)}
-              className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition"
+              className="w-10 h-10 rounded-lg bg-slate-100 hover:bg-slate-200 transition"
             >
               {totalPages}
             </button>
@@ -72,7 +72,7 @@ export function Pagination({
       <button
         onClick={() => onPageChange(currentPage + 1)}
         disabled={!hasMore && currentPage === totalPages}
-        className="px-4 py-2 bg-slate-200 dark:bg-slate-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-300 dark:hover:bg-slate-600 transition"
+        className="px-4 py-2 bg-slate-200 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-300 transition"
       >
         다음 →
       </button>

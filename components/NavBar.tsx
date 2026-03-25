@@ -1,21 +1,36 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { ThemeToggle } from "./ThemeToggle";
+import { usePathname, useRouter } from "next/navigation";
+import { useState } from "react";
 
 export default function NavBar() {
   const path = usePathname();
+  const router = useRouter();
   const isTeacher = path.startsWith("/teacher");
   const isStaff = path.startsWith("/staff");
+  const [loading, setLoading] = useState(false);
+
+  const handleLogout = async () => {
+    setLoading(true);
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+      router.push("/login");
+      router.refresh();
+    } catch (err) {
+      console.error("Logout failed:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <nav 
-      className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-4 py-3 flex items-center gap-6 transition-colors" 
+      className="bg-white border-b border-slate-200 px-4 py-3 flex items-center gap-6" 
       role="navigation" 
       aria-label="메인 네비게이션"
     >
-      <Link href="/" className="font-bold text-lg text-indigo-700 dark:text-indigo-400 tracking-tight hover:text-indigo-800 dark:hover:text-indigo-300 transition" aria-label="MADI 홈">
+      <Link href="/" className="font-bold text-lg text-indigo-700 tracking-tight hover:text-indigo-800 transition" aria-label="MADI 홈">
         MADI
       </Link>
       {isTeacher && (
@@ -68,13 +83,23 @@ export default function NavBar() {
           </Link>
         </div>
       )}
-      <div className="ml-auto flex gap-3 items-center text-xs text-slate-400">
-        <ThemeToggle />
-        {isTeacher ? (
-          <Link href="/staff" className="hover:text-slate-600 dark:hover:text-slate-300">알바 화면 →</Link>
-        ) : isStaff ? (
-          <Link href="/teacher" className="hover:text-slate-600 dark:hover:text-slate-300">강사 화면 →</Link>
-        ) : null}
+      <div className="ml-auto flex gap-3 items-center text-xs">
+        {isTeacher && (
+          <span className="text-slate-600 font-medium">👩‍🏫 강사</span>
+        )}
+        {isStaff && (
+          <span className="text-slate-600 font-medium">🧑‍💼 알바</span>
+        )}
+        
+        {(isTeacher || isStaff) && (
+          <button
+            onClick={handleLogout}
+            disabled={loading}
+            className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg transition disabled:opacity-50"
+          >
+            {loading ? "로그아웃 중..." : "로그아웃"}
+          </button>
+        )}
       </div>
     </nav>
   );

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { ThemeProvider } from "@/components/ThemeProvider";
 import { QueryProvider } from "./providers";
 
 export const metadata: Metadata = {
@@ -22,14 +21,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ko" suppressHydrationWarning>
+    <html lang="ko">
       <head>
         <meta charSet="utf-8" />
       </head>
-      <body className="bg-slate-50 dark:bg-slate-900 min-h-screen antialiased transition-colors">
-        <QueryProvider>
-          <ThemeProvider>{children}</ThemeProvider>
-        </QueryProvider>
+      <body className="bg-slate-50 min-h-screen antialiased">
+        <QueryProvider>{children}</QueryProvider>
       </body>
     </html>
   );

@@ -28,7 +28,7 @@ export function FilterBar({
   showDate = true,
 }: FilterBarProps) {
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm p-4 mb-6">
+    <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {showSearch && (
           <Input
@@ -42,13 +42,13 @@ export function FilterBar({
 
         {showProgram && (
           <div className="space-y-1">
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+            <label className="block text-sm font-medium text-slate-700">
               프로그램
             </label>
             <select
               value={programId}
               onChange={(e) => onProgramChange?.(e.target.value)}
-              className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
             >
               <option value="">전체</option>
               {programs.map((p) => (
