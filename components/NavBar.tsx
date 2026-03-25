@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { ThemeToggle } from "./ThemeToggle";
 
 export default function NavBar() {
   const path = usePathname();
@@ -10,11 +11,11 @@ export default function NavBar() {
 
   return (
     <nav 
-      className="bg-white border-b border-slate-200 px-4 py-3 flex items-center gap-6" 
+      className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-4 py-3 flex items-center gap-6 transition-colors" 
       role="navigation" 
       aria-label="메인 네비게이션"
     >
-      <Link href="/" className="font-bold text-lg text-indigo-700 tracking-tight hover:text-indigo-800 transition" aria-label="MADI 홈">
+      <Link href="/" className="font-bold text-lg text-indigo-700 dark:text-indigo-400 tracking-tight hover:text-indigo-800 dark:hover:text-indigo-300 transition" aria-label="MADI 홈">
         MADI
       </Link>
       {isTeacher && (
@@ -67,11 +68,12 @@ export default function NavBar() {
           </Link>
         </div>
       )}
-      <div className="ml-auto flex gap-2 text-xs text-slate-400">
+      <div className="ml-auto flex gap-3 items-center text-xs text-slate-400">
+        <ThemeToggle />
         {isTeacher ? (
-          <Link href="/staff" className="hover:text-slate-600">알바 화면 →</Link>
+          <Link href="/staff" className="hover:text-slate-600 dark:hover:text-slate-300">알바 화면 →</Link>
         ) : isStaff ? (
-          <Link href="/teacher" className="hover:text-slate-600">강사 화면 →</Link>
+          <Link href="/teacher" className="hover:text-slate-600 dark:hover:text-slate-300">강사 화면 →</Link>
         ) : null}
       </div>
     </nav>
