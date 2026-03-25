@@ -10,6 +10,7 @@ const links = [
   { href: "/teacher/test/stats", label: "TEST 통계", desc: "테스트별 점수 통계 및 분포" },
   { href: "/teacher/clinic/register", label: "클리닉 일괄 등록", desc: "반 전체 클리닉 행 생성" },
   { href: "/teacher/clinic/review", label: "클리닉 결과 조회", desc: "클리닉 현황 확인" },
+  { href: "/teacher/clinic/schedule", label: "📅 정기 클리닉 설정", desc: "요일별 자동 등록" },
   { href: "/teacher/archive", label: "📦 데이터 아카이빙", desc: "월별 데이터 보관 관리" },
 ];
 

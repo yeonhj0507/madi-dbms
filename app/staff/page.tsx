@@ -7,6 +7,7 @@ import { swrSet } from "@/lib/swr-cache";
 const links = [
   { href: "/staff/clinic", label: "클리닉 운영", desc: "출석 확인 + 클리닉 완료 처리" },
   { href: "/staff/test/score", label: "점수 입력", desc: "테스트 점수 입력" },
+  { href: "/staff/clinic/quick", label: "⚡ 클리닉 빠른 입력", desc: "스마트 입력 (RC 35, 좋음)" },
 ];
 
 const today = new Date().toISOString().split("T")[0];
