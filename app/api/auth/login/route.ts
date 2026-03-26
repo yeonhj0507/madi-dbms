@@ -1,4 +1,4 @@
-import { authenticate, createToken } from '@/lib/auth';
+import { authenticate, createToken } from '@/lib/auth-v2';
 import { success, error } from '@/lib/api-response';
 import { cookies } from 'next/headers';
 
@@ -12,7 +12,7 @@ export async function POST(req: Request) {
       return error('아이디 또는 비밀번호가 올바르지 않습니다', 401);
     }
     
-    const token = createToken(username, password);
+    const token = createToken(user);
     const cookieStore = await cookies();
     
     cookieStore.set('auth-token', token, {

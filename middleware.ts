@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { getUserByToken } from '@/lib/auth';
+import { getUserByToken, hasRole } from '@/lib/auth-v2';
 
 export function middleware(request: NextRequest) {
-  const protectedRoutes = ['/teacher', '/staff'];
+  const protectedRoutes = ['/admin', '/teacher', '/staff'];
   const isProtectedRoute = protectedRoutes.some((route) =>
     request.nextUrl.pathname.startsWith(route)
   );
@@ -22,11 +22,15 @@ export function middleware(request: NextRequest) {
     }
     
     // 역할 기반 접근 제어
-    if (request.nextUrl.pathname.startsWith('/teacher') && user.role !== 'teacher') {
+    if (request.nextUrl.pathname.startsWith('/admin') && !hasRole(user, 'admin')) {
+      return NextResponse.redirect(new URL('/', request.url));
+    }
+    
+    if (request.nextUrl.pathname.startsWith('/teacher') && !hasRole(user, 'teacher')) {
       return NextResponse.redirect(new URL('/staff', request.url));
     }
     
-    if (request.nextUrl.pathname.startsWith('/staff') && user.role !== 'staff') {
+    if (request.nextUrl.pathname.startsWith('/staff') && user.role === 'teacher') {
       return NextResponse.redirect(new URL('/teacher', request.url));
     }
   }

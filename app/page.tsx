@@ -8,10 +8,21 @@ export default function Home() {
         <p className="text-slate-600 text-base sm:text-lg">역할을 선택하세요</p>
       </div>
       
-      <div className="flex flex-col sm:flex-row gap-6 w-full max-w-2xl">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 w-full max-w-4xl">
+        <Link
+          href="/admin"
+          className="flex flex-col items-center gap-3 bg-white rounded-2xl shadow-md hover:shadow-xl px-8 sm:px-10 py-10 sm:py-12 hover:ring-2 hover:ring-red-400 transition-all duration-200 focus-visible:outline-2 focus-visible:outline-red-500 focus-visible:outline-offset-2"
+          aria-label="관리자 메뉴로 이동"
+          role="menuitem"
+        >
+          <span className="text-5xl sm:text-6xl">🔧</span>
+          <span className="text-lg sm:text-xl font-semibold text-slate-700">관리자</span>
+          <span className="text-xs text-slate-500">시스템 관리</span>
+        </Link>
+
         <Link
           href="/teacher"
-          className="flex flex-col items-center gap-3 bg-white rounded-2xl shadow-md hover:shadow-xl px-8 sm:px-10 py-10 sm:py-12 hover:ring-2 hover:ring-indigo-400 transition-all duration-200 flex-1 focus-visible:outline-2 focus-visible:outline-indigo-500 focus-visible:outline-offset-2"
+          className="flex flex-col items-center gap-3 bg-white rounded-2xl shadow-md hover:shadow-xl px-8 sm:px-10 py-10 sm:py-12 hover:ring-2 hover:ring-indigo-400 transition-all duration-200 focus-visible:outline-2 focus-visible:outline-indigo-500 focus-visible:outline-offset-2"
           aria-label="강사 메뉴로 이동"
           role="menuitem"
         >
@@ -22,7 +33,7 @@ export default function Home() {
         
         <Link
           href="/staff"
-          className="flex flex-col items-center gap-3 bg-white rounded-2xl shadow-md hover:shadow-xl px-8 sm:px-10 py-10 sm:py-12 hover:ring-2 hover:ring-emerald-400 transition-all duration-200 flex-1 focus-visible:outline-2 focus-visible:outline-emerald-500 focus-visible:outline-offset-2"
+          className="flex flex-col items-center gap-3 bg-white rounded-2xl shadow-md hover:shadow-xl px-8 sm:px-10 py-10 sm:py-12 hover:ring-2 hover:ring-emerald-400 transition-all duration-200 focus-visible:outline-2 focus-visible:outline-emerald-500 focus-visible:outline-offset-2"
           aria-label="알바 메뉴로 이동"
           role="menuitem"
         >
