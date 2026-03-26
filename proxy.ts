@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { getUserByToken, hasRole } from '@/lib/auth-v2';
 
-export function middleware(request: NextRequest) {
+export default function proxy(request: NextRequest) {
   const protectedRoutes = ['/admin', '/teacher', '/staff'];
   const isProtectedRoute = protectedRoutes.some((route) =>
     request.nextUrl.pathname.startsWith(route)
