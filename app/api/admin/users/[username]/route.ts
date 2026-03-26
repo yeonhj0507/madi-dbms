@@ -3,7 +3,7 @@ import { cookies } from 'next/headers';
 import { getUserByToken, isAdmin, deleteUser } from '@/lib/auth-v2';
 
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ username: string }> }
 ) {
   const cookieStore = await cookies();

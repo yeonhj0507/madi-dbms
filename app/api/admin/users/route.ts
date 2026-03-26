@@ -7,7 +7,7 @@ import {
   createUser,
 } from '@/lib/auth-v2';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   const cookieStore = await cookies();
   const token = cookieStore.get('auth-token')?.value;
 
