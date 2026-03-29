@@ -115,7 +115,7 @@ export function createToken(user: User): string {
     id: user.id,
     username: user.username,
     role: user.role,
-    exp: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
+    exp: Date.now() + 7 * 24 * 60 * 60 * 1000, // 7 days
   };
 
   return Buffer.from(JSON.stringify(payload)).toString('base64');

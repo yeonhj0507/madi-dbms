@@ -18,9 +18,9 @@ export async function POST(req: Request) {
     cookieStore.set('auth-token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'none', // Vercel HTTPS 지원
+      sameSite: 'lax',
       maxAge: 60 * 60 * 24 * 7, // 7 days
-      path: '/', // 모든 경로에서 접근 가능
+      path: '/',
     });
     
     return success({ user }, '로그인 성공');

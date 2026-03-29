@@ -1,4 +1,4 @@
-import { getUserByToken } from '@/lib/auth';
+import { getUserByToken } from '@/lib/auth-v2';
 import { success, unauthorized } from '@/lib/api-response';
 import { cookies } from 'next/headers';
 
