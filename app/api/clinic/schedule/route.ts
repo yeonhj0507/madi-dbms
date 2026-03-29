@@ -32,7 +32,7 @@ export async function GET() {
   try {
     logRequest('GET', '/api/clinic/schedule');
     const schedules = await loadSchedules();
-    return success({ data: schedules });
+    return success(schedules);
   } catch (err) {
     logError(err);
     return error('스케줄 조회 실패', 500);
@@ -66,7 +66,7 @@ export async function POST(req: Request) {
     schedules.push(newSchedule);
     await saveSchedules(schedules);
 
-    return success({ data: newSchedule }, '스케줄 추가 완료');
+    return success(newSchedule, '스케줄 추가 완료');
   } catch (err) {
     logError(err);
     return error('스케줄 추가 실패', 500);

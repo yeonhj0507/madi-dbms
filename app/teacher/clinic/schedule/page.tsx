@@ -24,13 +24,13 @@ export default function ClinicSchedulePage() {
   const loadPrograms = async () => {
     const res = await fetch("/api/programs");
     const data = await res.json();
-    if (data.ok) setPrograms(data.data);
+    if (Array.isArray(data)) setPrograms(data);
   };
 
   const loadSchedules = async () => {
     const res = await fetch("/api/clinic/schedule");
     const data = await res.json();
-    if (data.ok) setSchedules(data.data || []);
+    if (data.ok && Array.isArray(data.data)) setSchedules(data.data);
   };
 
   const saveSchedule = async (schedule: Partial<Schedule>) => {
