@@ -164,7 +164,12 @@ export default function TestRegisterPage() {
           category,
         }),
       });
-      const data = await res.json();
+      const json = await res.json();
+      const data = json.ok ? json.data : json;
+      if (!json.ok) {
+        setToast({ message: json.error ?? "오류가 발생했습니다", type: "error" });
+        return;
+      }
       setToast({
         message: `완료: ${data.succeeded}건 성공${data.failed ? `, ${data.failed}건 실패` : ""}`,
         type: data.failed ? "error" : "success",

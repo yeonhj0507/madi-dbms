@@ -12,7 +12,7 @@ export async function POST(req: Request) {
     
     const validation = validateRequest(CreateTestSchema, {
       students: body.students,
-      programId: body.programId || '',
+      programId: body.programId,
       testId: body.testId,
       date: body.date,
     });

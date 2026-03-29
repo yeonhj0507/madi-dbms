@@ -22,7 +22,7 @@ export const CreateClinicSchema = z.object({
 // Create test schema
 export const CreateTestSchema = z.object({
   students: z.array(StudentSchema).min(1, 'At least one student is required'),
-  programId: z.string().min(1, 'Program ID is required'),
+  programId: z.string().optional(),
   testId: z.string().min(1, 'Test ID is required'),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format (YYYY-MM-DD)'),
 });
