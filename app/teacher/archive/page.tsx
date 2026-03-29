@@ -6,6 +6,7 @@ type ArchiveResult = {
   count: number;
   copied: number;
   skipped?: boolean;
+  errors?: string[];
 };
 
 type Results = {
@@ -169,6 +170,9 @@ export default function ArchivePage() {
                         <span className={d.copied === d.count ? "text-emerald-600 font-semibold" : "text-rose-500 font-semibold"}>
                           {d.copied.toLocaleString()}건
                         </span>
+                        {(d.errors?.length ?? 0) > 0 && (
+                          <div className="text-xs text-rose-400 mt-0.5">{d.errors![0]}</div>
+                        )}
                       </td>
                     )}
                   </tr>
