@@ -1,141 +1,222 @@
-import { notion } from '@/lib/notion';
-import { DB_IDS } from '@/lib/notion-ids';
-import { success, error } from '@/lib/api-response';
-import { logRequest, logError } from '@/lib/logger';
+import { notion } from "@/lib/notion";
+import { DB_IDS } from "@/lib/notion-ids";
+import { success, error } from "@/lib/api-response";
 
-/**
- * 월별 데이터 아카이빙 API
- * 지정된 월의 TEST_RECORDS와 CLINICS를 아카이브 DB로 이관
- */
-export async function POST(req: Request) {
+const BACKUP_IDS = {
+  STUDENTS: process.env.BACKUP_STUDENTS_DB!,
+  PROGRAMS: process.env.BACKUP_PROGRAMS_DB!,
+  TEST_MGMT: process.env.BACKUP_TEST_MGMT_DB!,
+  TEST_RECORDS: process.env.BACKUP_TEST_RECORDS_DB!,
+  CLINICS: process.env.BACKUP_CLINICS_DB!,
+};
+
+const today = () => new Date().toISOString().split("T")[0];
+
+function oneMonthAgo() {
+  const d = new Date();
+  d.setMonth(d.getMonth() - 1);
+  return d.toISOString().split("T")[0];
+}
+
+// 페이지네이션 처리된 전체 쿼리
+async function queryAll(database_id: string, filter: any) {
+  let results: any[] = [];
+  let cursor: string | undefined;
+  do {
+    const res: any = await notion.databases.query({
+      database_id,
+      filter,
+      ...(cursor ? { start_cursor: cursor } : {}),
+      page_size: 100,
+    });
+    results = [...results, ...res.results];
+    cursor = res.has_more ? res.next_cursor : undefined;
+  } while (cursor);
+  return results;
+}
+
+function text(v: string) {
+  return { rich_text: v ? [{ text: { content: v.slice(0, 2000) } }] : [] };
+}
+
+// ── 각 DB 아카이브 함수 ──────────────────────────────────────────
+
+async function archiveStudents(dryRun: boolean) {
+  const pages = await queryAll(DB_IDS.STUDENTS, {
+    property: "상태", status: { equals: "퇴원" },
+  });
+  if (dryRun || !pages.length) return { count: pages.length, copied: 0 };
+
+  const results = await Promise.allSettled(pages.map((p: any) =>
+    notion.pages.create({
+      parent: { database_id: BACKUP_IDS.STUDENTS },
+      properties: {
+        이름: { title: [{ text: { content: p.properties["이름"]?.title?.[0]?.plain_text ?? "" } }] },
+        상태: text(p.properties["상태"]?.status?.name ?? ""),
+        학년: text(p.properties["학년"]?.select?.name ?? ""),
+        지점: text(p.properties["지점"]?.select?.name ?? ""),
+        등원시작일: p.properties["등원시작일"]?.date ? { date: p.properties["등원시작일"].date } : { date: null },
+        아카이브일: { date: { start: today() } },
+      },
+    })
+  ));
+  return { count: pages.length, copied: results.filter(r => r.status === "fulfilled").length };
+}
+
+async function archivePrograms(dryRun: boolean) {
+  const pages = await queryAll(DB_IDS.PROGRAMS, {
+    property: "상태", status: { equals: "종강" },
+  });
+  if (dryRun || !pages.length) return { count: pages.length, copied: 0 };
+
+  const results = await Promise.allSettled(pages.map((p: any) =>
+    notion.pages.create({
+      parent: { database_id: BACKUP_IDS.PROGRAMS },
+      properties: {
+        프로그램명: { title: [{ text: { content: p.properties["프로그램명"]?.title?.[0]?.plain_text ?? "" } }] },
+        상태: text(p.properties["상태"]?.status?.name ?? ""),
+        캠퍼스: text(p.properties["캠퍼스"]?.select?.name ?? ""),
+        수업기간_시작: p.properties["수업기간"]?.date ? { date: { start: p.properties["수업기간"].date.start } } : { date: null },
+        아카이브일: { date: { start: today() } },
+      },
+    })
+  ));
+  return { count: pages.length, copied: results.filter(r => r.status === "fulfilled").length };
+}
+
+async function archiveTestMgmt(dryRun: boolean) {
+  const cutoff = oneMonthAgo();
+  const pages = await queryAll(DB_IDS.TEST_MANAGEMENT, {
+    and: [
+      { property: "상태", status: { equals: "시험 완료" } },
+      { property: "정규시험일", date: { before: cutoff } },
+    ],
+  });
+  if (dryRun || !pages.length) return { count: pages.length, copied: 0 };
+
+  const results = await Promise.allSettled(pages.map((p: any) =>
+    notion.pages.create({
+      parent: { database_id: BACKUP_IDS.TEST_MGMT },
+      properties: {
+        제목: { title: [{ text: { content: p.properties["시험제목"]?.title?.[0]?.plain_text ?? "" } }] },
+        시험제목: text(p.properties["시험제목"]?.title?.[0]?.plain_text ?? ""),
+        시험유형: text(p.properties["시험유형"]?.select?.name ?? ""),
+        시험구분: text(p.properties["시험구분"]?.select?.name ?? ""),
+        정규시험일: p.properties["정규시험일"]?.date ? { date: p.properties["정규시험일"].date } : { date: null },
+        상태: text(p.properties["상태"]?.status?.name ?? ""),
+        아카이브일: { date: { start: today() } },
+      },
+    })
+  ));
+  return { count: pages.length, copied: results.filter(r => r.status === "fulfilled").length };
+}
+
+async function archiveTestRecords(dryRun: boolean) {
+  const cutoff = oneMonthAgo();
+  const pages = await queryAll(DB_IDS.TEST_RECORDS, {
+    property: "날짜", date: { before: cutoff },
+  });
+  if (dryRun || !pages.length) return { count: pages.length, copied: 0 };
+
+  const results = await Promise.allSettled(pages.map((p: any) =>
+    notion.pages.create({
+      parent: { database_id: BACKUP_IDS.TEST_RECORDS },
+      properties: {
+        이름제목: { title: [{ text: { content: p.properties["이름제목"]?.title?.[0]?.plain_text ?? "" } }] },
+        학생이름: text(p.properties["학생이름"]?.formula?.string ?? ""),
+        TEST제목: text(p.properties["TEST제목"]?.formula?.string ?? ""),
+        날짜: p.properties["날짜"]?.date ? { date: p.properties["날짜"].date } : { date: null },
+        응시구분: text(p.properties["응시구분"]?.select?.name ?? ""),
+        점수: { number: p.properties["점수"]?.number ?? null },
+        상태: text(p.properties["상태"]?.status?.name ?? ""),
+        아카이브일: { date: { start: today() } },
+      },
+    })
+  ));
+  return { count: pages.length, copied: results.filter(r => r.status === "fulfilled").length };
+}
+
+async function archiveClinics(dryRun: boolean) {
+  const cutoff = oneMonthAgo();
+  const pages = await queryAll(DB_IDS.CLINICS, {
+    property: "날짜", date: { before: cutoff },
+  });
+  if (dryRun || !pages.length) return { count: pages.length, copied: 0 };
+
+  const results = await Promise.allSettled(pages.map((p: any) =>
+    notion.pages.create({
+      parent: { database_id: BACKUP_IDS.CLINICS },
+      properties: {
+        제목: { title: [{ text: { content: p.properties["제목"]?.title?.[0]?.plain_text ?? "" } }] },
+        학생명: text(p.properties["학생명"]?.rollup?.array?.[0]?.title?.[0]?.plain_text ?? ""),
+        날짜: p.properties["날짜"]?.date ? { date: p.properties["날짜"].date } : { date: null },
+        클리닉내용: text(p.properties["클리닉내용"]?.rich_text?.[0]?.plain_text ?? ""),
+        클리닉결과: text(p.properties["클리닉결과"]?.rich_text?.[0]?.plain_text ?? ""),
+        상태: text(p.properties["상태"]?.status?.name ?? ""),
+        아카이브일: { date: { start: today() } },
+      },
+    })
+  ));
+  return { count: pages.length, copied: results.filter(r => r.status === "fulfilled").length };
+}
+
+// ── Dry run 조회 ─────────────────────────────────────────────────
+
+export async function GET() {
   try {
-    logRequest('POST', '/api/archive');
-    
-    const { year, month, dryRun = false } = await req.json();
-    
-    if (!year || !month) {
-      return error('year와 month가 필요합니다', 400);
-    }
-    
-    // 날짜 범위 계산
-    const startDate = `${year}-${String(month).padStart(2, '0')}-01`;
-    const endDate = new Date(year, month, 0).toISOString().split('T')[0];
-    
-    // 아카이브 DB ID (환경변수에서 가져오거나 생성)
-    const archiveDbIds = {
-      testRecords: process.env[`ARCHIVE_TEST_RECORDS_${year}_${month}`] || null,
-      clinics: process.env[`ARCHIVE_CLINICS_${year}_${month}`] || null,
-    };
-    
-    // TEST_RECORDS 조회
-    const testRecordsQuery = await notion.databases.query({
-      database_id: DB_IDS.TEST_RECORDS,
-      filter: {
+    const cutoff = oneMonthAgo();
+    const [students, programs, testMgmt, testRecords, clinics] = await Promise.all([
+      queryAll(DB_IDS.STUDENTS, { property: "상태", status: { equals: "퇴원" } }),
+      queryAll(DB_IDS.PROGRAMS, { property: "상태", status: { equals: "종강" } }),
+      queryAll(DB_IDS.TEST_MANAGEMENT, {
         and: [
-          {
-            property: '날짜',
-            date: {
-              on_or_after: startDate,
-            },
-          },
-          {
-            property: '날짜',
-            date: {
-              on_or_before: endDate,
-            },
-          },
+          { property: "상태", status: { equals: "시험 완료" } },
+          { property: "정규시험일", date: { before: cutoff } },
         ],
-      },
-    });
-    
-    // CLINICS 조회
-    const clinicsQuery = await notion.databases.query({
-      database_id: DB_IDS.CLINICS,
-      filter: {
-        and: [
-          {
-            property: '날짜',
-            date: {
-              on_or_after: startDate,
-            },
-          },
-          {
-            property: '날짜',
-            date: {
-              on_or_before: endDate,
-            },
-          },
-        ],
-      },
-    });
-    
-    const stats = {
-      testRecords: testRecordsQuery.results.length,
-      clinics: clinicsQuery.results.length,
-    };
-    
-    // Dry run - 이관할 데이터만 확인
-    if (dryRun) {
-      return success({
-        message: 'Dry run 완료 (실제 이관 없음)',
-        stats,
-        startDate,
-        endDate,
-      });
-    }
-    
-    // 실제 아카이빙 (아카이브 DB가 있을 때만)
-    let archived = {
-      testRecords: 0,
-      clinics: 0,
-    };
-    
-    if (archiveDbIds.testRecords) {
-      // TEST_RECORDS 복사 & 원본 삭제는 수동으로
-      // (Notion API는 bulk move를 직접 지원하지 않음)
-      archived.testRecords = testRecordsQuery.results.length;
-    }
-    
-    if (archiveDbIds.clinics) {
-      archived.clinics = clinicsQuery.results.length;
-    }
-    
+      }),
+      queryAll(DB_IDS.TEST_RECORDS, { property: "날짜", date: { before: cutoff } }),
+      queryAll(DB_IDS.CLINICS, { property: "날짜", date: { before: cutoff } }),
+    ]);
+
     return success({
-      message: '아카이빙 준비 완료',
-      stats,
-      archived,
-      note: '실제 이관은 Notion에서 수동으로 진행하거나, 별도 스크립트 필요',
+      cutoff,
+      preview: {
+        students: students.length,
+        programs: programs.length,
+        testMgmt: testMgmt.length,
+        testRecords: testRecords.length,
+        clinics: clinics.length,
+        total: students.length + programs.length + testMgmt.length + testRecords.length + clinics.length,
+      },
     });
-  } catch (err) {
-    logError(err, { path: '/api/archive' });
-    return error('아카이빙 중 오류 발생', 500);
+  } catch (err: any) {
+    return error(err.message, 500);
   }
 }
 
-/**
- * 아카이빙 가능한 월 조회
- */
-export async function GET() {
+// ── 실제 아카이브 ────────────────────────────────────────────────
+
+export async function POST(req: Request) {
   try {
-    logRequest('GET', '/api/archive');
-    
-    const now = new Date();
-    const currentYear = now.getFullYear();
-    const currentMonth = now.getMonth() + 1;
-    
-    // 지난달까지만 아카이빙 가능
-    const archivableMonths = [];
-    for (let i = 1; i < currentMonth; i++) {
-      archivableMonths.push({
-        year: currentYear,
-        month: i,
-        label: `${currentYear}년 ${i}월`,
-      });
-    }
-    
-    return success({ archivableMonths });
-  } catch (err) {
-    logError(err);
-    return error('조회 중 오류 발생', 500);
+    const { dryRun = true, targets = ["students", "programs", "testMgmt", "testRecords", "clinics"] } = await req.json();
+
+    const run = async (key: string, fn: (d: boolean) => Promise<any>) =>
+      targets.includes(key) ? fn(dryRun) : { count: 0, copied: 0, skipped: true };
+
+    const [students, programs, testMgmt, testRecords, clinics] = await Promise.all([
+      run("students", archiveStudents),
+      run("programs", archivePrograms),
+      run("testMgmt", archiveTestMgmt),
+      run("testRecords", archiveTestRecords),
+      run("clinics", archiveClinics),
+    ]);
+
+    return success({
+      dryRun,
+      results: { students, programs, testMgmt, testRecords, clinics },
+      message: dryRun ? "미리보기 완료 (실제 이관 없음)" : "백업 완료 (원본은 유지됨)",
+    });
+  } catch (err: any) {
+    return error(err.message, 500);
   }
 }
