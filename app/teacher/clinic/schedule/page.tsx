@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/Button";
+import SearchableSelect from "@/components/SearchableSelect";
 
 interface Schedule {
   id: string;
@@ -15,6 +16,8 @@ export default function ClinicSchedulePage() {
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [programs, setPrograms] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [selectedProgramId, setSelectedProgramId] = useState("");
+  const [selectedDay, setSelectedDay] = useState("1");
 
   useEffect(() => {
     loadPrograms();
@@ -73,58 +76,43 @@ export default function ClinicSchedulePage() {
       <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
         <h2 className="text-lg font-semibold mb-4">새 스케줄 추가</h2>
         
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            const formData = new FormData(e.currentTarget);
-            saveSchedule({
-              programId: formData.get("programId") as string,
-              dayOfWeek: parseInt(formData.get("dayOfWeek") as string),
-              enabled: true,
-            });
-            e.currentTarget.reset();
-          }}
-          className="space-y-4"
-        >
+        <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              프로그램
-            </label>
-            <select
-              name="programId"
-              required
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg"
-            >
-              <option value="">선택하세요</option>
-              {programs.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
-            </select>
+            <label className="block text-sm font-medium text-slate-700 mb-2">프로그램</label>
+            <SearchableSelect
+              options={programs}
+              value={selectedProgramId}
+              onChange={setSelectedProgramId}
+              placeholder="프로그램 선택"
+            />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              요일
-            </label>
+            <label className="block text-sm font-medium text-slate-700 mb-2">요일</label>
             <select
-              name="dayOfWeek"
-              required
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg"
+              value={selectedDay}
+              onChange={(e) => setSelectedDay(e.target.value)}
+              className="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm"
             >
               {DAYS.map((day, idx) => (
-                <option key={idx} value={idx}>
-                  {day}요일
-                </option>
+                <option key={idx} value={idx}>{day}요일</option>
               ))}
             </select>
           </div>
 
-          <Button type="submit" loading={loading}>
+          <Button
+            type="button"
+            loading={loading}
+            onClick={() => {
+              if (!selectedProgramId) return;
+              saveSchedule({ programId: selectedProgramId, dayOfWeek: parseInt(selectedDay), enabled: true });
+              setSelectedProgramId("");
+              setSelectedDay("1");
+            }}
+          >
             스케줄 추가
           </Button>
-        </form>
+        </div>
       </div>
 
       <div className="bg-white rounded-xl p-6 shadow-sm">
