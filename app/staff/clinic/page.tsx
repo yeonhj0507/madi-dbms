@@ -231,7 +231,7 @@ export default function StaffClinicPage() {
       {sheet && (
         <div className="fixed inset-0 z-40 flex flex-col justify-end">
           <div className="absolute inset-0 bg-black/40" onClick={() => setSheet(null)} />
-          <div className="relative bg-white rounded-t-2xl p-5 z-50 pb-8">
+          <div className="relative bg-white rounded-t-2xl p-5 z-50 fixed-bottom-safe">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-bold text-slate-800 text-base">{sheet.studentName} — 클리닉 완료</h3>
               <button onClick={() => setSheet(null)} className="text-slate-400 text-xl leading-none">✕</button>
@@ -265,7 +265,7 @@ export default function StaffClinicPage() {
       {createOpen && (
         <div className="fixed inset-0 z-40 flex flex-col justify-end">
           <div className="absolute inset-0 bg-black/40" onClick={() => setCreateOpen(false)} />
-          <div className="relative bg-white rounded-t-2xl p-5 z-50 pb-8">
+          <div className="relative bg-white rounded-t-2xl p-5 z-50 fixed-bottom-safe">
             <div className="flex items-center justify-between mb-5">
               <h3 className="font-bold text-slate-800 text-base">클리닉 추가</h3>
               <button onClick={() => setCreateOpen(false)} className="text-slate-400 text-xl leading-none">✕</button>

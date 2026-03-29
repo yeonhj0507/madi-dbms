@@ -18,6 +18,17 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+/* Safe area support for iPhone notch / home bar */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+.fixed-bottom-safe {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
 /* Accessibility improvements */
 :focus-visible {
   @apply outline-2 outline-indigo-500 outline-offset-2;

@@ -196,7 +196,7 @@ export default function ClinicRegisterPage() {
         </div>
       )}
 
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-4">
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-4 fixed-bottom-safe">
         <div className="max-w-4xl mx-auto">
           <button
             onClick={handleSubmit}
