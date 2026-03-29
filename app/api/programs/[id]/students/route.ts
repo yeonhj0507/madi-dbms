@@ -9,7 +9,7 @@ export async function GET(
 ) {
   const { id } = await params;
   const CACHE_KEY = `students:${id}`;
-  const cached = cacheGet<{ id: string; name: string }[]>(CACHE_KEY);
+  const cached = await cacheGet<{ id: string; name: string }[]>(CACHE_KEY);
   if (cached) return NextResponse.json(cached);
 
   try {
@@ -26,7 +26,7 @@ export async function GET(
       name: page.properties["이름"]?.title?.[0]?.plain_text ?? "(이름 없음)",
     }));
 
-    cacheSet(CACHE_KEY, students);
+    await cacheSet(CACHE_KEY, students);
     return NextResponse.json(students, {
       headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=3600" },
     });

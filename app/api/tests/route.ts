@@ -8,7 +8,7 @@ export async function GET(req: Request) {
   const programId = searchParams.get("programId");
 
   const CACHE_KEY = programId ? `tests:${programId}` : "tests";
-  const cached = cacheGet<{ id: string; name: string }[]>(CACHE_KEY);
+  const cached = await cacheGet<{ id: string; name: string }[]>(CACHE_KEY);
   if (cached) {
     return NextResponse.json(cached, {
       headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=3600" },
@@ -28,7 +28,7 @@ export async function GET(req: Request) {
       name: page.properties["시험제목"]?.title?.[0]?.plain_text ?? "(이름 없음)",
     }));
 
-    cacheSet(CACHE_KEY, tests);
+    await cacheSet(CACHE_KEY, tests);
     return NextResponse.json(tests, {
       headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=3600" },
     });
@@ -59,10 +59,10 @@ export async function POST(req: Request) {
     }) as any;
 
     // 관련 캐시 무효화
-    cacheDel("tests");
+    await cacheDel("tests");
     if (programId) {
-      cacheDel(`tests:${programId}`);
-      cacheDel(`program-tests:${programId}`);
+      await cacheDel(`tests:${programId}`);
+      await cacheDel(`program-tests:${programId}`);
     }
 
     return NextResponse.json({

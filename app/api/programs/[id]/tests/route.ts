@@ -8,7 +8,7 @@ export async function GET(
 ) {
   const { id } = await params;
   const CACHE_KEY = `program-tests:${id}`;
-  const cached = cacheGet<{ id: string; name: string }[]>(CACHE_KEY);
+  const cached = await cacheGet<{ id: string; name: string }[]>(CACHE_KEY);
   if (cached) {
     return NextResponse.json(cached, {
       headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=3600" },
@@ -53,7 +53,7 @@ export async function GET(
       )
     );
 
-    cacheSet(CACHE_KEY, tests);
+    await cacheSet(CACHE_KEY, tests);
     return NextResponse.json(tests, {
       headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=3600" },
     });
