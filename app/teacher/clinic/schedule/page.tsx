@@ -105,7 +105,8 @@ export default function ClinicSchedulePage() {
             loading={loading}
             onClick={() => {
               if (!selectedProgramId) return;
-              saveSchedule({ programId: selectedProgramId, dayOfWeek: parseInt(selectedDay), enabled: true });
+              const programName = programs.find((p) => p.id === selectedProgramId)?.name ?? "";
+              saveSchedule({ programId: selectedProgramId, programName, dayOfWeek: parseInt(selectedDay), enabled: true });
               setSelectedProgramId("");
               setSelectedDay("1");
             }}

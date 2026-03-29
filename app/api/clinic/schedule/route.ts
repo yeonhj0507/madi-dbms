@@ -42,23 +42,17 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     logRequest('POST', '/api/clinic/schedule');
-    const { programId, dayOfWeek, enabled = true } = await req.json();
+    const { programId, programName, dayOfWeek, enabled = true } = await req.json();
 
     if (!programId || dayOfWeek === undefined) {
       return error('programId와 dayOfWeek가 필요합니다', 400);
     }
 
-    // 프로그램 이름 조회
-    const programRes = await fetch(
-      `${process.env.NEXTAUTH_URL}/api/programs/${programId}`
-    );
-    const programData = await programRes.json();
-
     const schedules = await loadSchedules();
     const newSchedule: Schedule = {
       id: Date.now().toString(),
       programId,
-      programName: programData.data?.name || '(이름 없음)',
+      programName: programName || '(이름 없음)',
       dayOfWeek,
       enabled,
     };
