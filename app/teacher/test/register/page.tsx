@@ -118,7 +118,10 @@ export default function TestRegisterPage() {
     const timer = setTimeout(() => {
       fetch(`/api/students?q=${encodeURIComponent(q)}`)
         .then((r) => r.json())
-        .then((d) => { if (Array.isArray(d)) setSearchResults(d); })
+        .then((d) => {
+          const list = Array.isArray(d) ? d : (d?.data?.students ?? []);
+          setSearchResults(list);
+        })
         .finally(() => setSearching(false));
     }, 300);
     return () => clearTimeout(timer);

@@ -11,7 +11,7 @@ export async function GET(
   const cached = await cacheGet<{ id: string; name: string }[]>(CACHE_KEY);
   if (cached) {
     return NextResponse.json(cached, {
-      headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=3600" },
+      headers: { "Cache-Control": "public, s-maxage=300" },
     });
   }
 
@@ -55,7 +55,7 @@ export async function GET(
 
     await cacheSet(CACHE_KEY, tests);
     return NextResponse.json(tests, {
-      headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=3600" },
+      headers: { "Cache-Control": "public, s-maxage=300" },
     });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
