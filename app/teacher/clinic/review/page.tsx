@@ -14,7 +14,11 @@ export default function ClinicReviewPage() {
   useEffect(() => {
     fetch("/api/clinics/today")
       .then((r) => r.json())
-      .then(setRecords)
+      .then((data) => {
+        if (Array.isArray(data)) setRecords(data);
+        else setToast({ message: "클리닉 목록을 불러오지 못했습니다", type: "error" });
+      })
+      .catch(() => setToast({ message: "클리닉 목록을 불러오지 못했습니다", type: "error" }))
       .finally(() => setLoading(false));
   }, []);
 

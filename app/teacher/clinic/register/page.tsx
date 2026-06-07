@@ -20,7 +20,13 @@ export default function ClinicRegisterPage() {
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
   useEffect(() => {
-    fetch("/api/programs").then((r) => r.json()).then((d) => Array.isArray(d) && setPrograms(d));
+    fetch("/api/programs")
+      .then((r) => r.json())
+      .then((d) => {
+        if (Array.isArray(d)) setPrograms(d);
+        else setToast({ message: "프로그램 목록을 불러오지 못했습니다", type: "error" });
+      })
+      .catch(() => setToast({ message: "프로그램 목록을 불러오지 못했습니다", type: "error" }));
   }, []);
 
   useEffect(() => {
@@ -28,11 +34,15 @@ export default function ClinicRegisterPage() {
     fetch(`/api/programs/${programId}/students`)
       .then((r) => r.json())
       .then((data: Student[]) => {
-        if (!Array.isArray(data)) return;
+        if (!Array.isArray(data)) {
+          setToast({ message: "학생 목록을 불러오지 못했습니다", type: "error" });
+          return;
+        }
         setStudents(data);
         setSelected(new Set(data.map((s) => s.id)));
         setIndividualContents({});
-      });
+      })
+      .catch(() => setToast({ message: "학생 목록을 불러오지 못했습니다", type: "error" }));
   }, [programId]);
 
   const toggleAll = () => {

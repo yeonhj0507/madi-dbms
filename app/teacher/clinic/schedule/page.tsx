@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/Button";
 import SearchableSelect from "@/components/SearchableSelect";
+import Toast from "@/components/Toast";
 
 interface Schedule {
   id: string;
@@ -18,6 +19,7 @@ export default function ClinicSchedulePage() {
   const [loading, setLoading] = useState(false);
   const [selectedProgramId, setSelectedProgramId] = useState("");
   const [selectedDay, setSelectedDay] = useState("1");
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
   useEffect(() => {
     loadPrograms();
@@ -25,15 +27,25 @@ export default function ClinicSchedulePage() {
   }, []);
 
   const loadPrograms = async () => {
-    const res = await fetch("/api/programs");
-    const data = await res.json();
-    if (Array.isArray(data)) setPrograms(data);
+    try {
+      const res = await fetch("/api/programs");
+      const data = await res.json();
+      if (Array.isArray(data)) setPrograms(data);
+      else setToast({ message: "프로그램 목록을 불러오지 못했습니다", type: "error" });
+    } catch {
+      setToast({ message: "프로그램 목록을 불러오지 못했습니다", type: "error" });
+    }
   };
 
   const loadSchedules = async () => {
-    const res = await fetch("/api/clinic/schedule");
-    const data = await res.json();
-    if (data.ok && Array.isArray(data.data)) setSchedules(data.data);
+    try {
+      const res = await fetch("/api/clinic/schedule");
+      const data = await res.json();
+      if (data.ok && Array.isArray(data.data)) setSchedules(data.data);
+      else setToast({ message: "스케줄 목록을 불러오지 못했습니다", type: "error" });
+    } catch {
+      setToast({ message: "스케줄 목록을 불러오지 못했습니다", type: "error" });
+    }
   };
 
   const saveSchedule = async (schedule: Partial<Schedule>) => {
@@ -46,11 +58,13 @@ export default function ClinicSchedulePage() {
       });
       const data = await res.json();
       if (data.ok) {
-        alert("스케줄 저장 완료!");
+        setToast({ message: "스케줄이 저장됐습니다", type: "success" });
         loadSchedules();
+      } else {
+        setToast({ message: data.error ?? "저장에 실패했습니다", type: "error" });
       }
-    } catch (err) {
-      alert("저장 실패");
+    } catch {
+      setToast({ message: "저장 중 오류가 발생했습니다", type: "error" });
     } finally {
       setLoading(false);
     }
@@ -166,6 +180,8 @@ export default function ClinicSchedulePage() {
           <li>• 스케줄은 언제든지 추가/비활성화 가능</li>
         </ul>
       </div>
+
+      {toast && <Toast {...toast} onClose={() => setToast(null)} />}
     </div>
   );
 }

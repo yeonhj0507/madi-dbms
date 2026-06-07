@@ -1,19 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 
 export default function LoginPage() {
-  const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const login = async (loginUsername: string, loginPassword: string) => {
     setError("");
     setLoading(true);
 
@@ -21,27 +18,35 @@ export default function LoginPage() {
       const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ username: loginUsername, password: loginPassword }),
       });
 
       const data = await response.json();
 
       if (!data.ok) {
         setError(data.error);
-      } else {
-        router.push("/");
-        router.refresh();
+        setLoading(false);
+        return;
       }
-    } catch (err) {
+
+      // 로그인 직후 인증 쿠키가 미들웨어에 확실히 반영되도록 풀 페이지 이동.
+      // router.push + router.refresh 조합은 경쟁 상태로 첫 시도가 무시될 수 있음.
+      window.location.href = "/";
+    } catch {
       setError("로그인 중 오류가 발생했습니다");
-    } finally {
       setLoading(false);
     }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    login(username, password);
   };
 
   const quickLogin = (role: "teacher" | "staff") => {
     setUsername(role);
     setPassword("madi123");
+    login(role, "madi123");
   };
 
   return (

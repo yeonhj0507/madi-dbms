@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
 import Toast from "@/components/Toast";
 import SearchableSelect from "@/components/SearchableSelect";
 import type { Program, Student, TestItem } from "@/lib/types";
@@ -45,7 +47,13 @@ export default function TestRegisterPage() {
   const [creating, setCreating] = useState(false);
 
   useEffect(() => {
-    fetch("/api/programs").then((r) => r.json()).then((d) => Array.isArray(d) && setPrograms(d));
+    fetch("/api/programs")
+      .then((r) => r.json())
+      .then((d) => {
+        if (Array.isArray(d)) setPrograms(d);
+        else setToast({ message: "프로그램 목록을 불러오지 못했습니다", type: "error" });
+      })
+      .catch(() => setToast({ message: "프로그램 목록을 불러오지 못했습니다", type: "error" }));
   }, []);
 
   useEffect(() => {
@@ -60,11 +68,15 @@ export default function TestRegisterPage() {
       fetch(`/api/programs/${programId}/students`).then((r) => r.json()),
     ]).then(([testData, studentData]) => {
       if (Array.isArray(testData)) setTests(testData);
+      else setToast({ message: "TEST 목록을 불러오지 못했습니다", type: "error" });
       if (Array.isArray(studentData)) {
         setStudents(studentData);
         setSelected(new Set(studentData.map((s: Student) => s.id)));
+      } else {
+        setToast({ message: "학생 목록을 불러오지 못했습니다", type: "error" });
       }
-    }).finally(() => setLoadingTests(false));
+    }).catch(() => setToast({ message: "데이터를 불러오지 못했습니다", type: "error" }))
+      .finally(() => setLoadingTests(false));
   }, [programId]);
 
   const openCreateModal = () => {
@@ -342,20 +354,16 @@ export default function TestRegisterPage() {
             </div>
 
             <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-600 mb-1">
-                  시험제목 <span className="text-red-400">*</span>
-                </label>
-                <input
-                  type="text"
-                  autoFocus
-                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                  placeholder="예: 고1M 10월 월간평가"
-                  value={newName}
-                  onChange={(e) => setNewName(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleCreateTest()}
-                />
-              </div>
+              <Input
+                label="시험제목"
+                required
+                type="text"
+                autoFocus
+                placeholder="예: 고1M 10월 월간평가"
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleCreateTest()}
+              />
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -380,15 +388,12 @@ export default function TestRegisterPage() {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-slate-600 mb-1">정규시험일</label>
-                <input
-                  type="date"
-                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                  value={newDate}
-                  onChange={(e) => setNewDate(e.target.value)}
-                />
-              </div>
+              <Input
+                label="정규시험일"
+                type="date"
+                value={newDate}
+                onChange={(e) => setNewDate(e.target.value)}
+              />
 
               {programId && (
                 <p className="text-xs text-slate-400">
@@ -398,19 +403,17 @@ export default function TestRegisterPage() {
             </div>
 
             <div className="flex gap-3 mt-6">
-              <button
-                onClick={() => setCreateOpen(false)}
-                className="flex-1 border border-slate-200 rounded-xl py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50"
-              >
+              <Button variant="secondary" fullWidth onClick={() => setCreateOpen(false)}>
                 취소
-              </button>
-              <button
+              </Button>
+              <Button
+                fullWidth
+                loading={creating}
+                disabled={!newName.trim()}
                 onClick={handleCreateTest}
-                disabled={creating || !newName.trim()}
-                className="flex-1 bg-indigo-600 text-white rounded-xl py-2.5 text-sm font-semibold disabled:opacity-40 hover:bg-indigo-700 transition"
               >
-                {creating ? "생성 중..." : "TEST 생성"}
-              </button>
+                TEST 생성
+              </Button>
             </div>
           </div>
         </div>

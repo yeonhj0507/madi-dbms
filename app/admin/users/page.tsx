@@ -2,11 +2,18 @@
 
 import { useState, useEffect } from 'react';
 import { User } from '@/lib/auth-v2';
+import { Modal } from '@/components/ui/Modal';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import Toast from '@/components/Toast';
 
 export default function UsersManagement() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [formData, setFormData] = useState({
     username: '',
     password: '',
@@ -23,9 +30,11 @@ export default function UsersManagement() {
     try {
       const res = await fetch('/api/admin/users');
       const data = await res.json();
-      setUsers(data.users || []);
+      if (Array.isArray(data.users)) setUsers(data.users);
+      else setToast({ message: '사용자 목록을 불러오지 못했습니다', type: 'error' });
     } catch (error) {
       console.error('Failed to fetch users:', error);
+      setToast({ message: '사용자 목록을 불러오지 못했습니다', type: 'error' });
     } finally {
       setLoading(false);
     }
@@ -50,43 +59,45 @@ export default function UsersManagement() {
           email: '',
           role: 'staff',
         });
+        setToast({ message: '사용자가 생성됐습니다', type: 'success' });
         fetchUsers();
       } else {
         const error = await res.json();
-        alert(error.message || '사용자 생성 실패');
+        setToast({ message: error.message || '사용자 생성 실패', type: 'error' });
       }
     } catch (error) {
       console.error('Failed to create user:', error);
-      alert('사용자 생성 중 오류 발생');
+      setToast({ message: '사용자 생성 중 오류 발생', type: 'error' });
     }
   };
 
   const handleDelete = async (username: string) => {
-    if (!confirm(`정말 ${username} 사용자를 삭제하시겠습니까?`)) {
-      return;
-    }
-
+    setDeleting(true);
     try {
       const res = await fetch(`/api/admin/users/${username}`, {
         method: 'DELETE',
       });
 
       if (res.ok) {
+        setToast({ message: `${username} 사용자를 삭제했습니다`, type: 'success' });
         fetchUsers();
       } else {
         const error = await res.json();
-        alert(error.message || '사용자 삭제 실패');
+        setToast({ message: error.message || '사용자 삭제 실패', type: 'error' });
       }
     } catch (error) {
       console.error('Failed to delete user:', error);
-      alert('사용자 삭제 중 오류 발생');
+      setToast({ message: '사용자 삭제 중 오류 발생', type: 'error' });
+    } finally {
+      setDeleting(false);
+      setDeleteTarget(null);
     }
   };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-gray-500">로딩 중...</div>
+        <div className="text-slate-400">불러오는 중...</div>
       </div>
     );
   }
@@ -100,12 +111,9 @@ export default function UsersManagement() {
             시스템 사용자를 추가, 수정, 삭제할 수 있습니다
           </p>
         </div>
-        <button
-          onClick={() => setShowCreateModal(true)}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-        >
+        <Button onClick={() => setShowCreateModal(true)}>
           ➕ 사용자 추가
-        </button>
+        </Button>
       </div>
 
       {/* Users Table */}
@@ -170,8 +178,8 @@ export default function UsersManagement() {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm">
                   <button
-                    onClick={() => handleDelete(user.username)}
-                    className="text-red-600 hover:text-red-800"
+                    onClick={() => setDeleteTarget(user.username)}
+                    className="text-red-600 hover:text-red-800 disabled:text-gray-300 disabled:cursor-not-allowed"
                     disabled={user.role === 'admin' && users.filter(u => u.role === 'admin').length === 1}
                   >
                     삭제
@@ -191,67 +199,47 @@ export default function UsersManagement() {
               사용자 추가
             </h3>
             <form onSubmit={handleCreate} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  아이디
-                </label>
-                <input
-                  type="text"
-                  value={formData.username}
-                  onChange={(e) =>
-                    setFormData({ ...formData, username: e.target.value })
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                />
-              </div>
+              <Input
+                label="아이디"
+                type="text"
+                value={formData.username}
+                onChange={(e) =>
+                  setFormData({ ...formData, username: e.target.value })
+                }
+                required
+              />
+
+              <Input
+                label="비밀번호"
+                type="password"
+                value={formData.password}
+                onChange={(e) =>
+                  setFormData({ ...formData, password: e.target.value })
+                }
+                required
+              />
+
+              <Input
+                label="이름"
+                type="text"
+                value={formData.name}
+                onChange={(e) =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
+                required
+              />
+
+              <Input
+                label="이메일 (선택)"
+                type="email"
+                value={formData.email}
+                onChange={(e) =>
+                  setFormData({ ...formData, email: e.target.value })
+                }
+              />
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  비밀번호
-                </label>
-                <input
-                  type="password"
-                  value={formData.password}
-                  onChange={(e) =>
-                    setFormData({ ...formData, password: e.target.value })
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  이름
-                </label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  이메일 (선택)
-                </label>
-                <input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) =>
-                    setFormData({ ...formData, email: e.target.value })
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-slate-700 mb-1">
                   역할
                 </label>
                 <select
@@ -262,7 +250,7 @@ export default function UsersManagement() {
                       role: e.target.value as 'admin' | 'teacher' | 'staff',
                     })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 >
                   <option value="staff">알바</option>
                   <option value="teacher">강사</option>
@@ -271,24 +259,45 @@ export default function UsersManagement() {
               </div>
 
               <div className="flex gap-3 pt-4">
-                <button
-                  type="submit"
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
+                <Button type="submit" fullWidth>
                   생성
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowCreateModal(false)}
-                  className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
-                >
+                </Button>
+                <Button type="button" variant="secondary" fullWidth onClick={() => setShowCreateModal(false)}>
                   취소
-                </button>
+                </Button>
               </div>
             </form>
           </div>
         </div>
       )}
+
+      {/* 삭제 확인 모달 */}
+      <Modal
+        isOpen={deleteTarget !== null}
+        onClose={() => !deleting && setDeleteTarget(null)}
+        title="사용자 삭제"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setDeleteTarget(null)} disabled={deleting}>
+              취소
+            </Button>
+            <Button
+              variant="danger"
+              loading={deleting}
+              onClick={() => deleteTarget && handleDelete(deleteTarget)}
+            >
+              삭제
+            </Button>
+          </>
+        }
+      >
+        <p className="text-slate-600">
+          정말 <span className="font-semibold text-slate-900">{deleteTarget}</span> 사용자를 삭제하시겠습니까?
+          <br />이 작업은 되돌릴 수 없습니다.
+        </p>
+      </Modal>
+
+      {toast && <Toast {...toast} onClose={() => setToast(null)} />}
     </div>
   );
 }

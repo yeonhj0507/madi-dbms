@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import SearchableSelect from "@/components/SearchableSelect";
+import Toast from "@/components/Toast";
 import type { Program, TestItem } from "@/lib/types";
 
 type Record = {
@@ -31,9 +32,16 @@ export default function TestStatsPage() {
   const [loadingTests, setLoadingTests] = useState(false);
   const [records, setRecords] = useState<Record[]>([]);
   const [loadingRecords, setLoadingRecords] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
   useEffect(() => {
-    fetch("/api/programs").then((r) => r.json()).then((d) => Array.isArray(d) && setPrograms(d));
+    fetch("/api/programs")
+      .then((r) => r.json())
+      .then((d) => {
+        if (Array.isArray(d)) setPrograms(d);
+        else setToast({ message: "프로그램 목록을 불러오지 못했습니다", type: "error" });
+      })
+      .catch(() => setToast({ message: "프로그램 목록을 불러오지 못했습니다", type: "error" }));
   }, []);
 
   useEffect(() => {
@@ -42,7 +50,11 @@ export default function TestStatsPage() {
     setLoadingTests(true);
     fetch(`/api/programs/${programId}/tests`)
       .then((r) => r.json())
-      .then((d) => Array.isArray(d) && setTests(d))
+      .then((d) => {
+        if (Array.isArray(d)) setTests(d);
+        else setToast({ message: "TEST 목록을 불러오지 못했습니다", type: "error" });
+      })
+      .catch(() => setToast({ message: "TEST 목록을 불러오지 못했습니다", type: "error" }))
       .finally(() => setLoadingTests(false));
   }, [programId]);
 
@@ -51,7 +63,11 @@ export default function TestStatsPage() {
     setLoadingRecords(true);
     fetch(`/api/tests/${testId}/records`)
       .then((r) => r.json())
-      .then((d) => Array.isArray(d) && setRecords(d))
+      .then((d) => {
+        if (Array.isArray(d)) setRecords(d);
+        else setToast({ message: "성적 데이터를 불러오지 못했습니다", type: "error" });
+      })
+      .catch(() => setToast({ message: "성적 데이터를 불러오지 못했습니다", type: "error" }))
       .finally(() => setLoadingRecords(false));
   }, [testId]);
 
@@ -191,6 +207,8 @@ export default function TestStatsPage() {
           </div>
         </>
       )}
+
+      {toast && <Toast {...toast} onClose={() => setToast(null)} />}
     </div>
   );
 }

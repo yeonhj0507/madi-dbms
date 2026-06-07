@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 
 const TEACHER_LINKS = [
@@ -21,7 +21,6 @@ const STAFF_LINKS = [
 
 export default function NavBar() {
   const path = usePathname();
-  const router = useRouter();
   const isTeacher = path.startsWith("/teacher");
   const isStaff = path.startsWith("/staff");
   const [open, setOpen] = useState(false);
@@ -35,9 +34,9 @@ export default function NavBar() {
     setOpen(false);
     try {
       await fetch("/api/auth/logout", { method: "POST" });
-      router.push("/login");
-      router.refresh();
-    } finally {
+      // 인증 쿠키 변경 직후이므로 풀 페이지 이동으로 미들웨어가 새 상태를 확실히 인식하게 함
+      window.location.href = "/login";
+    } catch {
       setLoggingOut(false);
     }
   };

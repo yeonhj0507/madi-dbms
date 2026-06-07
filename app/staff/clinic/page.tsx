@@ -43,10 +43,14 @@ export default function StaffClinicPage() {
     fetch(url)
       .then((r) => r.json())
       .then((data: ClinicRecord[]) => {
-        if (!Array.isArray(data)) return;
+        if (!Array.isArray(data)) {
+          setToast({ message: "클리닉 목록을 불러오지 못했습니다", type: "error" });
+          return;
+        }
         swrSet(url, data);
         setRecords(data.map((d) => ({ ...d, attended: d.status !== "클리닉 전" })));
       })
+      .catch(() => setToast({ message: "클리닉 목록을 불러오지 못했습니다", type: "error" }))
       .finally(() => setLoading(false));
   }, []);
 
@@ -63,7 +67,11 @@ export default function StaffClinicPage() {
     if (cached) { setPrograms(cached); return; }
     fetch("/api/programs")
       .then((r) => r.json())
-      .then((d) => { if (Array.isArray(d)) { setPrograms(d); swrSet("/api/programs", d); } });
+      .then((d) => {
+        if (Array.isArray(d)) { setPrograms(d); swrSet("/api/programs", d); }
+        else setToast({ message: "프로그램 목록을 불러오지 못했습니다", type: "error" });
+      })
+      .catch(() => setToast({ message: "프로그램 목록을 불러오지 못했습니다", type: "error" }));
   };
 
   // 프로그램 선택 시 학생 목록 로드
@@ -75,7 +83,11 @@ export default function StaffClinicPage() {
     if (cached) { setStudents(cached); setLoadingStudents(false); return; }
     fetch(cacheKey)
       .then((r) => r.json())
-      .then((d) => { if (Array.isArray(d)) { setStudents(d); swrSet(cacheKey, d); } })
+      .then((d) => {
+        if (Array.isArray(d)) { setStudents(d); swrSet(cacheKey, d); }
+        else setToast({ message: "학생 목록을 불러오지 못했습니다", type: "error" });
+      })
+      .catch(() => setToast({ message: "학생 목록을 불러오지 못했습니다", type: "error" }))
       .finally(() => setLoadingStudents(false));
   }, [createProgramId]);
 
